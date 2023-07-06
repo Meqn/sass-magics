@@ -1,0 +1,41 @@
+/// 媒体查询 (设备尺寸、分辨率、方向)
+/// @param {string} $breakpoint 触发响应式的断点
+///-----------------------------------------------------
+$breakpoints: (
+  'phone': (320, 480),
+  'phablet': (481, 768),
+  'tablet': (769, 1024),
+  'desktop': (1025, 1200),
+  'tv': 1201
+);
+
+@mixin respond-to($breakpoint) {
+  $point: map-get($map: $breakpoints, $key: $breakpoint);
+  @if type-of($point) == 'list' {
+    $min: nth($list: $point, $n: 1);
+    $max: nth($list: $point, $n: 2);
+    @media (min-width: #{$min}px) and (max-width: #{$max}px) {
+      @content;
+    }
+  } @else {
+    @media (max-width: #{$point}px) {
+      @content;
+    }
+  }
+}
+
+/// example
+///-----------------------------------------------------
+.section{
+  padding: 1em 1.5em;
+  font-size: 16px;
+  color: rgb(62, 62, 62);
+
+  @include respond-to('phablet') {
+    font-size: 14px;
+  }
+  @include respond-to('phone') {
+    font-size: 12px;
+  }
+}
+
