@@ -1,0 +1,20 @@
+@use 'sass:string';
+
+/// 字符串替换
+/// @param {string} $string 原始字符串
+/// @param {string} $search 待替换的字符串
+/// @param {string} $replace 替换的字符串
+/// @return {string} 替换后的字符串
+///-----------------------------------------------------
+@function str-replace($string, $search, $replace: "") {
+  $index: str-index($string, $search);
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace +
+      str-replace(
+        str-slice($string, $index + str-length($search)),
+        $search,
+        $replace
+      );
+  }
+  @return $string;
+}
