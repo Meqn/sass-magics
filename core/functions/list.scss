@@ -5,17 +5,19 @@
 
 /// 遍历并返回新的 list(map)
 /// @param {string} $list 待遍历的 list(map)
-/// @param {function} $callback 遍历回调
+/// @param {function} $callback 遍历回调, 通过`get-function(callbackName)`获取
 /// @return {list | map} 新的 list(map)
-/// @example list-each((width: 100px, height: 100px), 'map-item-callback')
+/// @example scss
+/// list-each((width: 100px, height: 100px), get-function('item-callback'))
+/// @function item-callback($item, $index, $list) { @return nth($item, 2); }
 ///-----------------------------------------------------
 @function list-each($list, $callback: null) {
   @if not $callback {
     @return $list;
   }
 
-  @if not function-exists($callback) {
-    @error "The function '#{$callback}' doesn't exist.";
+  @if type-of($callback) != function {
+    @error "The 'callback' parameter must be a function.";
   }
 
   $length: length($list);
@@ -23,7 +25,7 @@
 
   @for $i from 1 through $length {
     $current: nth($list, $i);
-    $item: call(get-function($callback), $current, $i, $list);
+    $item: call($callback, $current, $i, $list);
 
     @if type-of($item) == map {
       $results: map-merge($results, $item);
@@ -94,17 +96,22 @@
 
 /// 快速排序 map
 /// @param {map} $map map
-/// @param {function} $callback 获取排序的值 ($item, $index, $map)
+/// @param {function} $callback 获取排序的值, 通过`get-function(callbackName)`获取
 /// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
 /// @return {map} 排序后的 map
+/// @example scss
+/// quick-sort-map((width: 100px), get-function('item-callback'), descend)
+/// @function item-callback($item, $index, $list) { @return nth($item, 2); }
 /// -----------------------------------------------------
 @function quick-sort-map($map, $callback: null, $order: ascend) {
   @if (length($map) < 2) {
     @return $map;
   }
 
-  @if $callback and not function-exists($callback) {
-    @error "The function '#{$callback}' doesn't exist.";
+  @if ($callback) {
+    @if type-of($callback) != function {
+      @error "The 'callback' parameter must be a function.";
+    }
   }
 
   $map-sorted: ();
