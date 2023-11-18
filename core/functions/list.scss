@@ -44,12 +44,17 @@
 
 /// 快速排序 list
 /// @param {list} $list list
+/// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
 /// @return {list} 排序后的 list
 ///-----------------------------------------------------
-@function quick-sort($list) {
+@function quick-sort($list, $order: ascend) {
   // 判断终止条件
   @if length($list) < 2 {
     @return $list;
+  }
+
+  @if $order != ascend and $order != descend {
+    @error "The 'order' parameter must be 'ascend' or 'descend'.";
   }
 
   // 初始化左右数组
@@ -62,16 +67,26 @@
   // 遍历列表,分割到左右数组
   @for $i from 2 through length($list) {
     $current: nth($list, $i);
-    @if $current < $pivot {
-      $left: append($left, $current);
+
+    @if $order == ascend {
+      @if $current < $pivot {
+        $left: append($left, $current);
+      } @else {
+        $right: append($right, $current); 
+      }
     } @else {
-      $right: append($right, $current);
+      // @else if $order == descend
+      @if $current > $pivot {
+        $left: append($left, $current);
+      } @else {
+        $right: append($right, $current);
+      }
     }
   }
 
   // 递归排序左右数组
-  $left: quick-sort($left);
-  $right: quick-sort($right);
+  $left: quick-sort($left, $order);
+  $right: quick-sort($right, $order);
 
   // 拼接最终结果
   @return join(join($left, $pivot), $right);
@@ -80,9 +95,10 @@
 /// 快速排序 map
 /// @param {map} $map map
 /// @param {function} $callback 获取排序的值 ($item, $index, $map)
+/// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
 /// @return {map} 排序后的 map
 /// -----------------------------------------------------
-@function quick-sort-map($map, $callback: null) {
+@function quick-sort-map($map, $callback: null, $order: ascend) {
   @if (length($map) < 2) {
     @return $map;
   }
@@ -97,7 +113,7 @@
   @if $callback {
     $map-values: list-each($map, $callback);
   }
-  $map-values-sorted: quick-sort($map-values);
+  $map-values-sorted: quick-sort($map-values, $order);
 
   @each $value in $map-values-sorted {
     $index: index($map-values, $value);
