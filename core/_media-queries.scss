@@ -1,42 +1,146 @@
+@use 'sass:math';
+@use 'sass:map';
+@use 'sass:list';
+
+@use './functions/list' as *;
+
 /// 媒体查询 (设备尺寸、分辨率、方向)
 /// @param {string} $breakpoint 触发响应式的断点
 ///-----------------------------------------------------
-$breakpoints: (
-  'phone': (320, 480),
+/* $breakpoints-segment: (
+  'mobile': (320, 480),
   'phablet': (481, 767),
   'tablet': (768, 991),
   'laptops': (992, 1199),
   'desktop': (1200, 1919),
-  'tv': 1920
-);
+  'wide': 1920
+) !default; */
+$breakpoints: (
+  'mobile': 320px,
+  'phablet': 480px,
+  'tablet': 768px,
+  'laptops': 1024px,
+  'desktop': 1280px,
+  'wide': 1680px
+) !default;
 
-@mixin respond-to($breakpoint) {
+/// 生成断点分段映射
+/// privite
+/// @param {map} $breakpoints 断点映射
+/// @return {map} 断点分段映射
+/// @example results: (tablet: (480, 768), desktop: (992, 1200))
+@function _breakpoints-segment($breakpoints: $breakpoints) {
+  $points: quick-sort-map($breakpoints, null, descend);
+  $results: ();
+  $lastValue: null;
+
+  @each $key, $point in $points {
+    $value: if($lastValue, ($point, $lastValue), $point);
+    $results: map-merge($results, ($key: $value));
+    $lastValue: $point;
+  }
+
+  @return $results;
+}
+
+/// 修改断点，如果断点不存在，则删除断点
+/// @param {string} $key 断点名
+/// @param {number} $point 断点
+/// @param {map} $breakpoints 断点映射
+/// @example scss
+/// @include change-breakpoint('mobile', 480px);
+@mixin change-breakpoint($key, $point: null, $breakpoints: $breakpoints) {
+  @if $point {
+    $breakpoints: map-merge($breakpoints, ($key: $point)) !global;
+  } @else {
+    $breakpoints: map-remove($breakpoints, $key) !global;
+  }
+}
+
+/// 获取指定断点值
+@function get-breakpoint($key, $breakpoints: $breakpoints) {
+  @if map-has-key($breakpoints, $key) {
+    @return map-get($breakpoints, $key);
+  } @else {
+    @warn "#{$key} wasn't found in $breakpoints.";
+    @return null;
+  }
+}
+
+/// 指定断点响应式
+/// @param {string} $breakpoint 触发响应式的断点
+/// @param {map} $breakpoints 断点映射
+/// @example scss
+/// @include respond-to('mobile') { font-size: 14px; };
+/// -----------------------------------------------------
+@mixin respond-to($breakpoint, $breakpoints: _breakpoints-segment($breakpoints)) {
   $point: map-get($map: $breakpoints, $key: $breakpoint);
   @if type-of($point) == 'list' {
     $min: nth($list: $point, $n: 1);
     $max: nth($list: $point, $n: 2);
-    @media (min-width: #{$min}px) and (max-width: #{$max}px) {
+    @media (min-width: $min) and (max-width: $max) {
       @content;
     }
   } @else {
-    @media (max-width: #{$point}px) {
+    @media (max-width: $point) {
       @content;
     }
   }
 }
 
-/// example
-///-----------------------------------------------------
-.section{
-  padding: 1em 1.5em;
-  font-size: 16px;
-  color: rgb(62, 62, 62);
+/// 媒体查询
+/// @param {number} $min 最小宽度
+/// @param {number} $max 最大宽度
+/// @param {string} $orientation 方向
+/// @param {string} $and 其他条件
+/// @param {string} $media-type 媒体类型
+/// @param {map} $breakpoints 断点映射
+/// @example scss
+/// @include mq($min: 768px, $media-type: 'screen') { font-size: 20px; };
+/// @reference 参考: https://github.com/sass-mq/sass-mq
+/// -----------------------------------------------------
+@mixin mq($min: false, $max: false, $orientation: false, $and: false, $media-type: 'all', $breakpoints: $breakpoints) {
+  $min-width: 0;
+  $max-width: 0;
+  $media-query: '';
 
-  @include respond-to('phablet') {
-    font-size: 14px;
+  @if $min {
+    @if type-of($min) == number {
+      $min-width: $min;
+    } @else {
+      $min-width: get-breakpoint($min, $breakpoints);
+    }
   }
-  @include respond-to('phone') {
-    font-size: 12px;
+
+  @if $max {
+    @if type-of($max) == number {
+      $max-width: $max;
+    } @else {
+      $max-width: get-breakpoint($max, $breakpoints) - 0.1px;
+    }
+  }
+
+  @if $min-width != 0 {
+    $media-query: '#{$media-query} and (min-width: #{$min-width})';
+  }
+  @if $max-width != 0 {
+    $media-query: '#{$media-query} and (max-width: #{$max-width})';
+  }
+  @if $orientation == 'landscape' {
+    $media-query: '#{$media-query} and (orientation: landscape)';
+  } @else if $orientation == 'portrait' {
+    $media-query: '#{$media-query} and (orientation: portrait)';
+  }
+  @if $and {
+    $media-query: '#{$media-query} and #{$and}';
+  }
+
+  @if $media-type == 'all' and $media-query != '' {
+    $media-type: '';
+    $media-query: str-slice(unquote($media-query), 6); //删除 ' and '
+  }
+
+  @media #{$media-type + $media-query} {
+    @content;
   }
 }
-
