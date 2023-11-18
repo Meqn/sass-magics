@@ -1,0 +1,114 @@
+@use "sass:math";
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
+
+/// 遍历并返回新的 list(map)
+/// @param {string} $list 待遍历的 list(map)
+/// @param {function} $callback 遍历回调
+/// @return {list | map} 新的 list(map)
+/// @example list-each((width: 100px, height: 100px), 'map-item-callback')
+///-----------------------------------------------------
+@function list-each($list, $callback: null) {
+  @if not $callback {
+    @return $list;
+  }
+
+  @if not function-exists($callback) {
+    @error "The function '#{$callback}' doesn't exist.";
+  }
+
+  $length: length($list);
+  $results: ();
+
+  @for $i from 1 through $length {
+    $current: nth($list, $i);
+    $item: call(get-function($callback), $current, $i, $list);
+
+    @if type-of($item) == map {
+      $results: map-merge($results, $item);
+    } @else {
+      $results: append($results, $item);
+    }
+  }
+  @return $results;
+}
+
+/// 遍历的回调函数
+/// @param {any} $item 当前项
+/// @param {number} $index 当前项索引
+/// @param {list | map} $list 待遍历的 list(map)
+@function _map-item-callback($item: null, $index: null, $list: null) {
+  @return $item;
+}
+
+/// 快速排序 list
+/// @param {list} $list list
+/// @return {list} 排序后的 list
+///-----------------------------------------------------
+@function quick-sort($list) {
+  // 判断终止条件
+  @if length($list) < 2 {
+    @return $list;
+  }
+
+  // 初始化左右数组
+  $left: ();
+  $right: ();
+
+  // 取第一个作为 pivot
+  $pivot: nth($list, 1);
+
+  // 遍历列表,分割到左右数组
+  @for $i from 2 through length($list) {
+    $current: nth($list, $i);
+    @if $current < $pivot {
+      $left: append($left, $current);
+    } @else {
+      $right: append($right, $current);
+    }
+  }
+
+  // 递归排序左右数组
+  $left: quick-sort($left);
+  $right: quick-sort($right);
+
+  // 拼接最终结果
+  @return join(join($left, $pivot), $right);
+}
+
+/// 快速排序 map
+/// @param {map} $map map
+/// @param {function} $callback 获取排序的值 ($item, $index, $map)
+/// @return {map} 排序后的 map
+/// -----------------------------------------------------
+@function quick-sort-map($map, $callback: null) {
+  @if (length($map) < 2) {
+    @return $map;
+  }
+
+  @if $callback and not function-exists($callback) {
+    @error "The function '#{$callback}' doesn't exist.";
+  }
+
+  $map-sorted: ();
+  $map-keys: map-keys($map);
+  $map-values: map-values($map);
+  @if $callback {
+    $map-values: list-each($map, $callback);
+  }
+  $map-values-sorted: quick-sort($map-values);
+
+  @each $value in $map-values-sorted {
+    $index: index($map-values, $value);
+    $key: nth($map-keys, $index);
+    $map-sorted: map-merge(
+      $map-sorted,
+      (
+        $key: map-get($map, $key),
+      )
+    );
+  }
+
+  @return $map-sorted;
+}
