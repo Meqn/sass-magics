@@ -30,7 +30,7 @@ $breakpoints: (
 /// @return {map} 断点分段映射
 /// @example results: (tablet: (480, 768), desktop: (992, 1200))
 @function _breakpoints-segment($breakpoints: $breakpoints) {
-  $points: quick-sort-map($breakpoints, null, descend);
+  $points: map-sort($breakpoints, null, descend);
   $results: ();
   $lastValue: null;
 

@@ -7,6 +7,8 @@
 /// @param {string} $list 待遍历的 list(map)
 /// @param {function} $callback 遍历回调, 通过`get-function(callbackName)`获取
 /// @return {list | map} 新的 list(map)
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
 /// @example scss
 /// list-each((width: 100px, height: 100px), get-function('item-callback'))
 /// @function item-callback($item, $index, $list) { @return nth($item, 2); }
@@ -48,8 +50,10 @@
 /// @param {list} $list list
 /// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
 /// @return {list} 排序后的 list
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
 ///-----------------------------------------------------
-@function quick-sort($list, $order: ascend) {
+@function list-sort($list, $order: ascend) {
   // 判断终止条件
   @if length($list) < 2 {
     @return $list;
@@ -87,8 +91,8 @@
   }
 
   // 递归排序左右数组
-  $left: quick-sort($left, $order);
-  $right: quick-sort($right, $order);
+  $left: list-sort($left, $order);
+  $right: list-sort($right, $order);
 
   // 拼接最终结果
   @return join(join($left, $pivot), $right);
@@ -99,11 +103,13 @@
 /// @param {function} $callback 获取排序的值, 通过`get-function(callbackName)`获取
 /// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
 /// @return {map} 排序后的 map
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
 /// @example scss
-/// quick-sort-map((width: 100px), get-function('item-callback'), descend)
+/// map-sort((width: 100px), get-function('item-callback'), descend)
 /// @function item-callback($item, $index, $list) { @return nth($item, 2); }
 /// -----------------------------------------------------
-@function quick-sort-map($map, $callback: null, $order: ascend) {
+@function map-sort($map, $callback: null, $order: ascend) {
   @if (length($map) < 2) {
     @return $map;
   }
@@ -120,7 +126,7 @@
   @if $callback {
     $map-values: list-each($map, $callback);
   }
-  $map-values-sorted: quick-sort($map-values, $order);
+  $map-values-sorted: list-sort($map-values, $order);
 
   @each $value in $map-values-sorted {
     $index: index($map-values, $value);
