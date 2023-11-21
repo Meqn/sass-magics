@@ -5,17 +5,14 @@
 @use '../core/list' as *;
 
 /// 媒体查询 (设备尺寸、分辨率、方向)
-/// @param {string} $breakpoint 触发响应式的断点
+/// @mixin change-breakpoints($key, $point, $breakpoints)
+/// @mixin respond-to($$key, $breakpoints)
+/// @mixin mq($min, $max, $orientation, $and, $media-type, $breakpoints)
 ///-----------------------------------------------------
-/* $breakpoints-segment: (
-  'mobile': (320, 480),
-  'phablet': (481, 767),
-  'tablet': (768, 991),
-  'laptops': (992, 1199),
-  'desktop': (1200, 1919),
-  'wide': 1920
-) !default; */
-$breakpoints: (
+
+/// 断点映射
+/// @access private
+$_breakpoints: (
   'mobile': 320px,
   'phablet': 480px,
   'tablet': 768px,
@@ -29,7 +26,7 @@ $breakpoints: (
 /// @param {map} $breakpoints 断点映射
 /// @return {map} 断点分段映射
 /// @example results: (tablet: (480, 768), desktop: (992, 1200))
-@function _breakpoints-segment($breakpoints: $breakpoints) {
+@function _breakpoints-segment($breakpoints: $_breakpoints) {
   $points: map-sort($breakpoints, null, descend);
   $results: ();
   $lastValue: null;
@@ -43,17 +40,25 @@ $breakpoints: (
   @return $results;
 }
 
-/// 修改断点，如果断点不存在，则删除断点
+/// 更改断点 (新增,修改,删除,替换)
+/// 1. $point存在为合并,否则为删除
+/// 2. $key不存在为替换
 /// @param {string} $key 断点名
 /// @param {number} $point 断点
 /// @param {map} $breakpoints 断点映射
 /// @example scss
 /// @include change-breakpoint('mobile', 480px);
-@mixin change-breakpoints($key, $point: null, $breakpoints: $breakpoints) {
-  @if $point {
-    $breakpoints: map-merge($breakpoints, ($key: $point)) !global;
+@mixin change-breakpoints($key, $point: null, $breakpoints: $_breakpoints) {
+  @if $key {
+    @if $point {
+      $_breakpoints: map-merge($breakpoints, ($key: $point)) !global;
+    } @else {
+      $_breakpoints: map-remove($breakpoints, $key) !global;
+    }
   } @else {
-    $breakpoints: map-remove($breakpoints, $key) !global;
+    @if $breakpoints {
+      $_breakpoints: $breakpoints !global;
+    }
   }
 }
 
@@ -61,7 +66,7 @@ $breakpoints: (
 /// @access private
 /// @param {string} $key 断点名
 /// @param {map} $breakpoints 断点映射
-@function _get-breakpoint($key, $breakpoints: $breakpoints) {
+@function _get-breakpoint($key, $breakpoints: $_breakpoints) {
   @if map-has-key($breakpoints, $key) {
     @return map-get($breakpoints, $key);
   } @else {
@@ -71,13 +76,13 @@ $breakpoints: (
 }
 
 /// 指定断点响应式
-/// @param {string} $breakpoint 触发响应式的断点
+/// @param {string} $key 触发响应式的断点
 /// @param {map} $breakpoints 断点映射
 /// @example scss
 /// @include respond-to('mobile') { font-size: 14px; };
 /// -----------------------------------------------------
-@mixin respond-to($breakpoint, $breakpoints: _breakpoints-segment($breakpoints)) {
-  $point: map-get($map: $breakpoints, $key: $breakpoint);
+@mixin respond-to($key, $breakpoints: _breakpoints-segment($_breakpoints)) {
+  $point: map-get($map: $breakpoints, $key: $key);
   @if type-of($point) == 'list' {
     $min: nth($list: $point, $n: 1);
     $max: nth($list: $point, $n: 2);
@@ -85,7 +90,7 @@ $breakpoints: (
       @content;
     }
   } @else {
-    @media (max-width: $point) {
+    @media (min-width: $point) {
       @content;
     }
   }
@@ -94,7 +99,7 @@ $breakpoints: (
 /// 媒体查询
 /// @param {number} $min 最小宽度
 /// @param {number} $max 最大宽度
-/// @param {string} $orientation 方向
+/// @param {string} $orientation 方向 [landscape, portrait]
 /// @param {string} $and 其他条件
 /// @param {string} $media-type 媒体类型
 /// @param {map} $breakpoints 断点映射
@@ -102,7 +107,7 @@ $breakpoints: (
 /// @include mq($min: 768px, $media-type: 'screen') { font-size: 20px; };
 /// @reference 参考: https://github.com/sass-mq/sass-mq
 /// -----------------------------------------------------
-@mixin mq($min: false, $max: false, $orientation: false, $and: false, $media-type: 'all', $breakpoints: $breakpoints) {
+@mixin mq($min: false, $max: false, $orientation: false, $and: false, $media-type: 'all', $breakpoints: $_breakpoints) {
   $min-width: 0;
   $max-width: 0;
   $media-query: '';
