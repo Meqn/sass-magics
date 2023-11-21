@@ -1,0 +1,41 @@
+/// 切换主题
+/// @mixin useTheme
+/// @example scss
+/// ```
+/// @use 'mixins/use-theme' as * with (
+///   $_themes: (
+///     light: (),
+///     dark: ()
+///   )
+/// );
+/// @include useTheme { color: useThemeVar(color); }
+/// ```
+///-----------------------------------------------------
+$_themes: (
+  light: (
+    color: #000
+  ),
+  dark: (
+    color: #fff
+  )
+) !default;
+
+/// 定义全局theme变量, 用于useTheme中收集依赖
+$_currentTheme: light;
+
+@mixin useTheme() {
+  @each $key, $value in $_themes {
+    $_currentTheme: $key !global; // 指向全局_currentTheme, 否则为局部变量
+    html[data-theme="#{$key}"] & {
+      @content;
+    }
+  }
+}
+
+/// 获取当前主题变量
+/// @param {string} $key 变量名
+/// @return {string} 变量值
+@function useThemeVar($key) {
+  $themeMap: map-get($map: $_themes, $key: $_currentTheme); // 获取遍历的当前主题
+  @return map-get($themeMap, $key);
+}
