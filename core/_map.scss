@@ -2,8 +2,12 @@
 @use "sass:list";
 @use "sass:map";
 @use "sass:meta";
-
 @use "./list" as *;
+
+/// map模块扩展
+/// @function map-sort($map, $callback: null, $order: ascend)
+/// @function map-extend($maps...)
+/// -----------------------------------------------------
 
 /// 快速排序 map
 /// @param {map} $map map
@@ -53,6 +57,8 @@
 /// @param {map} $maps... map
 /// @param {boolean} $deep 是否深度合并
 /// @return {map}
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
 /// -----------------------------------------------------
 @function map-extend($maps...) {
   $last: nth($maps, -1);
