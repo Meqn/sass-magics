@@ -3,14 +3,27 @@
 @use "sass:map";
 @use "sass:meta";
 
-/// list(map) 模块扩展
-/// @function list-each($list, $callback)
-/// @function list-sort($list, $order)
-/// @function map-sort($map, $callback, $order)
+/// list模块扩展
+/// @function list-sub($list, $start, $count: false)
+/// @function list-subset($list, $start, $end: false)
+/// @function list-remove($list, $args...)
+/// @function list-insert($list, $start, $args...)
+/// @function list-splice($list, $start, $count: false, $args...)
+/// @function list-extend($lists..., $separator, $bracketed)
+/// @function list-each($list, $callback: null)
+/// @function list-sort($list, $order: ascend)
+/// @function list-reverse($list, $separator: false, $bracketed: false)
 /// -----------------------------------------------------
 
+
 /// 删除list中指定索引值
-@function list-remove-index($list, $index) {
+/// @access private
+/// @param {list} $list list列表
+/// @param {number} $index 需要删除的索引
+/// @return {list} 删除后的list
+/// @example `_remove-index((10, 20, 30), 2)`
+/// -------------------------------------
+@function _remove-index($list, $index) {
   $length: length($list);
 
   @if $index == 0 or $index > $length {
@@ -28,19 +41,88 @@
 
 /// 删除list中指定值
 /// @access private
-@function list-remove-item($list, $item) {
+/// @param {list} $list list列表
+/// @param {list} $item 需要删除项
+/// @return {list} 删除后的list
+/// @example `_remove-item((10, 20, 30), 20)`
+/// -------------------------------------
+@function _remove-item($list, $item) {
   $index: index($list, $item);
   
   @if $index {
-    $list: list-remove-item(list-remove-index($list, $index), $item);
+    $list: _remove-item(list-sub($list, $index, 1), $item);
   }
   @return $list;
+}
+
+/// 通过索引截取list
+///!⚠️ 由于Sass索引从 `1` 开始, 故使用 `count`，而非 `end`.
+/// @param {list} $list 待遍历的 list
+/// @param {number} $start 开始索引
+/// @param {number} $count 截取长度
+/// @return {list} 截取后的 list
+/// @example `list-sub((10, 20, 30, 40), 2, 1)`
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// -----------------------------------------------------
+@function list-sub($list, $start, $count: false) {
+  @if $start <= 0 or ($count and $count < 0) {
+    @error "[list-sub]: The 'start' and 'count' parameter must be greater than 0.";
+  }
+
+  $length: length($list);
+  $count: if($count, $count, $length - $start + 1);
+  $end: $start + $count;
+  
+  @if $start > $length or $count == 0{
+    @return $list;
+  }
+  
+  $result: ();
+  @for $i from 1 through $length {
+    @if $i < $start or $i >= $end {
+      $result: list.append($result, nth($list, $i));
+    }
+  }
+  @return $result;
+}
+
+/// 通过开始和结束索引截取list
+/// @param {list} $list 待遍历的 list
+/// @param {number} $start 开始索引
+/// @param {number} $end 结束索引
+/// @return {list} 截取后的 list
+/// @example `list-subset((10, 20, 30, 40), 2, 3)`
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// -----------------------------------------------------
+@function list-subset($list, $start, $end: false) {
+  @if $start <= 0 or ($end and $end < 0) {
+    @error "[list-subset]: The 'start' and 'end' parameter must be greater than 0.";
+  }
+
+  $length: length($list);
+  $result: ();
+  
+  @if not $end {
+    $end: $length;
+  } @else if $end < $start {
+    @error "[list-subset]: The 'end' parameter must be greater than 'start'.";
+  }
+
+  @for $i from 1 through $length {
+    @if $i < $start or $i > $end {
+      $result: list.append($result, nth($list, $i));
+    }
+  }
+  @return $result;
 }
 
 /// 删除list中指定值
 /// @param {list} $list list列表
 /// @param {list} $args... 需要删除的值
 /// @return {list} 删除后的list
+/// @example `list-remove((10, 20, 30, 40), 20, 30)`
 /// @author Mervin <mengqing723@gmail.com>
 /// @link https://github.com/meqn/sass-magic
 /// -----------------------------------------------------
@@ -49,43 +131,80 @@
     @return $list;
   }
 
+  // 支持多参二次调用
+  @if type-of(nth($args, 1)) == arglist {
+    $args: nth($args, 1);
+  }
+
   @each $arg in $args {
-    $list: list-remove-item($list, $arg);
+    $list: _remove-item($list, $arg);
   }
   @return $list;
 }
 
 /// 在list任意位置插入值
 /// @param {list} $list list列表
-/// @param {number} $index 插入的位置
+/// @param {number} $start 插入的位置
 /// @param {list} $args... 需要插入的值
 /// @return {list} 插入后的list
+/// @example `list-insert((10, 20, 50, 60), 2, 30, 40)`
 /// @author Mervin <mengqing723@gmail.com>
 /// @link https://github.com/meqn/sass-magic
 /// -----------------------------------------------------
-@function list-insert($list, $index, $args...) {
+@function list-insert($list, $start, $args...) {
+  $listLength: length($list);
   $argsLength: length($args);
   
   @if $argsLength == 0 {
     @return $list;
   }
+  // 支持多参二次调用
+  @if type-of(nth($args, 1)) == arglist {
+    $args: nth($args, 1);
+  }
 
-  @if $index == 0 {
+  @if $start == 0 {
     @return list.join($args, $list);
   }
-  @if ($index >= $argsLength) {
+  @if ($start >= $listLength) {
     @return list.join($list, $args);
   }
   
   $result: ();
-  $listLength: length($list);
   @for $i from 1 through $listLength {
     $result: list.append($result, nth($list, $i));
-    @if $i == $index {
+    @if $i == $start {
       $result: list.join($result, $args);
     }
   }
   @return $result;
+}
+
+/// 删除或替换现有元素和添加新元素
+/// @param {list} $list list列表
+/// @param {number} $start 插入的位置
+/// @param {number} $count 删除的个数
+/// @param {list} $args... 需要插入的值
+/// @return {list} 更改后的list
+/// @example `list-splice((10, 20, 60, 40), 2, 1, 30)`
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// ----------------------------------------------------- 
+@function list-splice($list, $start, $count: false, $args...) {
+  $length: length($list);
+  $argLength: length($args);
+
+  // 1. 先删除
+  $list: list-sub($list, $start, $count);
+  @if $argLength and $argLength > 0 {
+    // 支持多参二次调用
+    @if type-of(nth($args, 1)) == arglist {
+      $args: nth($args, 1);
+    }
+    // 2. 再追加
+    $list: list-insert($list, $start, $args)
+  }
+  @return $list;
 }
 
 /// 合并list集合
@@ -93,6 +212,7 @@
 /// @param {string} $separator 分隔符
 /// @param {boolean} $bracketed 是否有中括号 []
 /// @return {list} 合并后的 list
+/// @example `list-extend((10, 20, 30), (40, 50, 60), 'space')`
 /// @author Mervin <mengqing723@gmail.com>
 /// @link https://github.com/meqn/sass-magic
 /// -----------------------------------------------------
@@ -116,14 +236,17 @@
       $bracketed: $last;
       @if $secondLast == "space" or $secondLast == "comma" or $secondLast == "slash" {
         $separator: $secondLast;
-        $lists: list-remove($lists, $last, $secondLast);
+        // 删除最后两项
+        $lists: list-sub($lists, $length - 1);
       } @else {
-        $lists: list-remove($lists, $last);
+        // 删除最后一项
+        $lists: list-sub($lists, $length);
       }
     }
     @if $last == "space" or $last == "comma" or $last == "slash" {
       $separator: $last;
-      $lists: list-remove($lists, $last);
+      // 删除最后一项
+      $lists: list-sub($lists, $length);
     }
   }
 
@@ -134,21 +257,15 @@
   @return $result;
 }
 
-
-@function list-splice($list, $start, $length, $args...) {
-  // $length: length($list);
-  @return $list;
-}
-
 /// 遍历并返回新的 list(map)
 /// @param {string} $list 待遍历的 list(map)
 /// @param {function} $callback 遍历回调, 通过`get-function(callbackName)`获取
 /// @return {list | map} 新的 list(map)
-/// @author Mervin <mengqing723@gmail.com>
-/// @link https://github.com/meqn/sass-magic
 /// @example scss
 /// list-each((width: 100px, height: 100px), get-function('item-callback'))
 /// @function item-callback($item, $index, $list) { @return nth($item, 2); }
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
 ///-----------------------------------------------------
 @function list-each($list, $callback: null) {
   @if not $callback {
@@ -188,6 +305,7 @@
 /// @param {list} $list list
 /// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
 /// @return {list} 排序后的 list
+/// @example `list-sort((20, 10, 50, 40), 'descend')`
 /// @author Mervin <mengqing723@gmail.com>
 /// @link https://github.com/meqn/sass-magic
 ///-----------------------------------------------------
@@ -241,6 +359,7 @@
 /// @param {string} $separator 分隔符
 /// @param {boolean} $bracketed 是否有中括号
 /// @return {list} 反转后的 list
+/// @example `list-reverse((10, 20, 30, 40), 'space', true)`
 /// @author Mervin <mengqing723@gmail.com>
 /// @link https://github.com/meqn/sass-magic
 /// -----------------------------------------------------
