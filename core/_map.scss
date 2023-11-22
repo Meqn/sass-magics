@@ -1,0 +1,79 @@
+@use "sass:math";
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
+
+@use "./list" as *;
+
+/// 快速排序 map
+/// @param {map} $map map
+/// @param {function} $callback 获取排序的值, 通过`get-function(callbackName)`获取
+/// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
+/// @return {map} 排序后的 map
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// @example scss
+/// map-sort((width: 100px), get-function('item-callback'), descend)
+/// @function item-callback($item, $index, $list) { @return nth($item, 2); }
+/// -----------------------------------------------------
+@function map-sort($map, $callback: null, $order: ascend) {
+  @if (length($map) < 2) {
+    @return $map;
+  }
+
+  @if ($callback) {
+    @if type-of($callback) != function {
+      @error "[map-sort]: The 'callback' parameter must be a function.";
+    }
+  }
+
+  $map-sorted: ();
+  $map-keys: map-keys($map);
+  $map-values: map-values($map);
+  @if $callback {
+    $map-values: list-each($map, $callback);
+  }
+  $map-values-sorted: list-sort($map-values, $order);
+
+  @each $value in $map-values-sorted {
+    $index: index($map-values, $value);
+    $key: nth($map-keys, $index);
+    $map-sorted: map-merge(
+      $map-sorted,
+      (
+        $key: map-get($map, $key),
+      )
+    );
+  }
+
+  @return $map-sorted;
+}
+
+/// 合并 map
+/// @param {map} $maps... map
+/// @param {boolean} $deep 是否深度合并
+/// @return {map}
+/// -----------------------------------------------------
+@function map-extend($maps...) {
+  $last: nth($maps, -1);
+  $deep: false;
+  $result: ();
+
+  @if type-of($last) == bool {
+    $deep: $last;
+    $maps: list-remove($maps, $last);
+  }
+
+  @each $map in $maps {
+    @if type-of($map) != map {
+      @error "[map-extend]: The 'maps' parameter must be a map.";
+    }
+    @if $deep {
+      $result: map.deep-merge($result, $map);
+    } @else {
+      $result: map-merge($result, $map);
+    }
+  }
+  
+  @return $result;
+}
