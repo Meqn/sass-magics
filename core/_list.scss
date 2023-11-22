@@ -3,6 +3,143 @@
 @use "sass:map";
 @use "sass:meta";
 
+/// list(map) 模块扩展
+/// @function list-each($list, $callback)
+/// @function list-sort($list, $order)
+/// @function map-sort($map, $callback, $order)
+/// -----------------------------------------------------
+
+/// 删除list中指定索引值
+@function list-remove-index($list, $index) {
+  $length: length($list);
+
+  @if $index == 0 or $index > $length {
+    @return $list;
+  }
+
+  $result: ();
+  @for $i from 1 through $length {
+    @if $i != $index {
+      $result: list.append($result, nth($list, $i));
+    }
+  }
+  @return $result;
+}
+
+/// 删除list中指定值
+/// @access private
+@function list-remove-item($list, $item) {
+  $index: index($list, $item);
+  
+  @if $index {
+    $list: list-remove-item(list-remove-index($list, $index), $item);
+  }
+  @return $list;
+}
+
+/// 删除list中指定值
+/// @param {list} $list list列表
+/// @param {list} $args... 需要删除的值
+/// @return {list} 删除后的list
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// -----------------------------------------------------
+@function list-remove($list, $args...) {
+  @if length($args) == 0 or length($list) == 0 {
+    @return $list;
+  }
+
+  @each $arg in $args {
+    $list: list-remove-item($list, $arg);
+  }
+  @return $list;
+}
+
+/// 在list任意位置插入值
+/// @param {list} $list list列表
+/// @param {number} $index 插入的位置
+/// @param {list} $args... 需要插入的值
+/// @return {list} 插入后的list
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// -----------------------------------------------------
+@function list-insert($list, $index, $args...) {
+  $argsLength: length($args);
+  
+  @if $argsLength == 0 {
+    @return $list;
+  }
+
+  @if $index == 0 {
+    @return list.join($args, $list);
+  }
+  @if ($index >= $argsLength) {
+    @return list.join($list, $args);
+  }
+  
+  $result: ();
+  $listLength: length($list);
+  @for $i from 1 through $listLength {
+    $result: list.append($result, nth($list, $i));
+    @if $i == $index {
+      $result: list.join($result, $args);
+    }
+  }
+  @return $result;
+}
+
+/// 合并list集合
+/// @param {list} $lists... 待合并的 list集合
+/// @param {string} $separator 分隔符
+/// @param {boolean} $bracketed 是否有中括号 []
+/// @return {list} 合并后的 list
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// -----------------------------------------------------
+@function list-extend($lists...) {
+  $length: length($lists);
+
+  @if not $length {
+    @return ();
+  }
+  @if length($lists) == 1 {
+    @return $lists;
+  }
+
+  $separator: auto;
+  $bracketed: false;
+  @if $length >= 3 {
+    $last: nth($lists, $length);
+    $secondLast: nth($lists, $length - 1);
+
+    @if type-of($last) == bool {
+      $bracketed: $last;
+      @if $secondLast == "space" or $secondLast == "comma" or $secondLast == "slash" {
+        $separator: $secondLast;
+        $lists: list-remove($lists, $last, $secondLast);
+      } @else {
+        $lists: list-remove($lists, $last);
+      }
+    }
+    @if $last == "space" or $last == "comma" or $last == "slash" {
+      $separator: $last;
+      $lists: list-remove($lists, $last);
+    }
+  }
+
+  $result: ();
+  @each $list in $lists {
+    $result: list.join($result, $list, $separator, $bracketed);
+  }
+  @return $result;
+}
+
+
+@function list-splice($list, $start, $length, $args...) {
+  // $length: length($list);
+  @return $list;
+}
+
 /// 遍历并返回新的 list(map)
 /// @param {string} $list 待遍历的 list(map)
 /// @param {function} $callback 遍历回调, 通过`get-function(callbackName)`获取
@@ -19,7 +156,7 @@
   }
 
   @if type-of($callback) != function {
-    @error "The 'callback' parameter must be a function.";
+    @error "[list-each]: The 'callback' parameter must be a function.";
   }
 
   $length: length($list);
@@ -39,10 +176,11 @@
 }
 
 /// 遍历的回调函数
+/// @access private
 /// @param {any} $item 当前项
 /// @param {number} $index 当前项索引
 /// @param {list | map} $list 待遍历的 list(map)
-@function _map-item-callback($item: null, $index: null, $list: null) {
+@function _each-callback($item: null, $index: null, $list: null) {
   @return $item;
 }
 
@@ -60,7 +198,7 @@
   }
 
   @if $order != ascend and $order != descend {
-    @error "The 'order' parameter must be 'ascend' or 'descend'.";
+    @error "[list-sort]: The 'order' parameter must be 'ascend' or 'descend'.";
   }
 
   // 初始化左右数组
@@ -98,46 +236,26 @@
   @return join(join($left, $pivot), $right);
 }
 
-/// 快速排序 map
-/// @param {map} $map map
-/// @param {function} $callback 获取排序的值, 通过`get-function(callbackName)`获取
-/// @param {string} $order 排序方式，可选 'ascend' 或 'descend'
-/// @return {map} 排序后的 map
+/// 反转 list并返回新的 list
+/// @param {list} $list 待反转的 list
+/// @param {string} $separator 分隔符
+/// @param {boolean} $bracketed 是否有中括号
+/// @return {list} 反转后的 list
 /// @author Mervin <mengqing723@gmail.com>
 /// @link https://github.com/meqn/sass-magic
-/// @example scss
-/// map-sort((width: 100px), get-function('item-callback'), descend)
-/// @function item-callback($item, $index, $list) { @return nth($item, 2); }
 /// -----------------------------------------------------
-@function map-sort($map, $callback: null, $order: ascend) {
-  @if (length($map) < 2) {
-    @return $map;
+@function list-reverse($list, $separator: false, $bracketed: false) {
+  $result: ();
+  $length: length($list);
+
+  @for $i from $length through 1 {
+    $result: append($result, nth($list, $i));
   }
 
-  @if ($callback) {
-    @if type-of($callback) != function {
-      @error "The 'callback' parameter must be a function.";
-    }
+  @if $separator or $bracketed {
+    $separator: if($separator, $separator, auto);
+    $bracketed: if($bracketed, $bracketed, auto);
+    $result: join($result, (), $separator, $bracketed);
   }
-
-  $map-sorted: ();
-  $map-keys: map-keys($map);
-  $map-values: map-values($map);
-  @if $callback {
-    $map-values: list-each($map, $callback);
-  }
-  $map-values-sorted: list-sort($map-values, $order);
-
-  @each $value in $map-values-sorted {
-    $index: index($map-values, $value);
-    $key: nth($map-keys, $index);
-    $map-sorted: map-merge(
-      $map-sorted,
-      (
-        $key: map-get($map, $key),
-      )
-    );
-  }
-
-  @return $map-sorted;
+  @return $result;
 }
