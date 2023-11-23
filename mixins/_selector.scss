@@ -1,0 +1,35 @@
+@use "sass:string";
+@use "sass:selector";
+@use "../core/string" as *;
+
+/// 选择器扩展
+/// @mixin limit-parent($selector, $limiter)
+/// @mixin unify-parent($child)
+///-----------------------------------------------------
+
+/// 给指定父选择器增加限制符
+/// @param {string} $selector 指定的父选择器
+/// @param {string} $limiter 限制修饰符
+///-----------------------------------------------------
+@mixin limit-parent($selector, $limiter) {
+  @if $selector and $limiter {
+    // `&` 可以获取嵌套全路径
+    $selectors: selector.unify(&, &);
+    $limitSelector: selector.unify($selector, $limiter);
+    $newSelectors: str-replace(#{$selectors}, $selector, $limitSelector);
+    @at-root #{$newSelectors} {
+      @content;
+    }
+  } @else {
+    @error "[limit-parent]: Selector and limiter is required";
+  }
+}
+
+/// 统一父选择器
+/// @param {string} $child 子选择器
+///-----------------------------------------------------
+@mixin unify-parent($child) {
+  @at-root #{selector.unify(&, $child)} {
+    @content;
+  }
+}
