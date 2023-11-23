@@ -2,7 +2,7 @@
 @use 'sass:map';
 @use 'sass:list';
 
-@use '../core/list' as *;
+@use '../core/map' as *;
 
 /// 媒体查询 (设备尺寸、分辨率、方向)
 /// @mixin change-breakpoints($key, $point, $breakpoints)
@@ -70,7 +70,7 @@ $_breakpoints: (
   @if map-has-key($breakpoints, $key) {
     @return map-get($breakpoints, $key);
   } @else {
-    @warn "#{$key} wasn't found in $breakpoints.";
+    @warn "[_get-breakpoint]: #{$key} wasn't found in $breakpoints.";
     @return null;
   }
 }
