@@ -1,0 +1,127 @@
+@use "sass:math";
+@use "sass:meta";
+
+/// 单位转换
+/// @function strip-unit($value)
+/// @function compare-unit($values...)
+/// @function join-unit($value, $unit)
+/// @function add-unit($value, $unit)
+/// @function px2rem($value, $base)
+/// @function px2em($value, $base)
+/// -----------------------------------------------------
+
+/// 基础字体大小
+$_base-font-size: 16px !default;
+
+/// 去除单位
+/// @param {number} $value 值
+/// @return {number} 去除单位后的值
+/// -----------------------------------------------------
+@function strip-unit($value) {
+  @return math.div($value, $value * 0 + 1);
+}
+
+/// 比较多个值的单位是否相等
+/// @param {number} $value 值
+/// @return {boolean} 是否相等
+/// -----------------------------------------------------
+@function compare-unit($values...) {
+  $unit: unit(nth($values, 1));
+  $equal: true;
+
+  @each $value in $values {
+    @if unit($value) != $unit {
+      $equal: false;
+    }
+  }
+
+  @return $equal;
+}
+
+/// 合并单位, 返回 number或 string
+/// @param {number} $value 值
+/// @param {string | number} $unit 单位, .e.g: ['px', 1px]
+/// @return {string | number} $unit是number时返回number，否则返回string
+/// -----------------------------------------------------
+@function join-unit($value, $unit) {
+  $_valueUnit: unit($value);
+  $_unit: if(type-of($unit) == number, unit($unit), $unit);
+
+  @if $_valueUnit != '' {
+    @if $_valueUnit != $_unit {
+      @warn '[join-unit]: Parameter units are different.';
+    }
+    @return $value;
+  } @else {
+    @if type-of($unit) == number {
+      @return $value * $unit;
+    }
+    @return $value + $unit;
+  }
+}
+
+/// 添加单位，返回合并后的数值
+/// @param {number} $value 值
+/// @param {string | number} $unit 单位, .e.g: ['px', 1px]
+/// @return {number}
+/// -----------------------------------------------------
+@function add-unit($value, $unit: px) {
+  $valueUnit: unit($value);
+  @if $valueUnit != '' {
+    @if unit($value) != $unit {
+      @warn '[add-unit]: Parameter units are different.';
+    }
+    @return $value;
+  } @else {
+    @if type-of($unit) == number {
+      @return $value * $unit;
+    } @else {
+      @if $unit == 'px' {
+        @return $value * 1px;
+      } @else if $unit == 'em' {
+        @return $value * 1em;
+      } @else if $unit == 'rem' {
+        @return $value * 1rem;
+      } @else if $unit == '%' {
+        @return $value * 1%;
+      } @else {
+        @warn "[add-unit]: Unsupported unit: #{$unit}.";
+        @return $value;
+      }
+    }
+  }
+}
+
+/// 将 px 转换为 rem
+/// @param {number} $value 值
+/// @param {number} $base 基准值
+/// @return {number}
+/// -----------------------------------------------------
+@function px2rem($value, $base: $_base-font-size) {
+  @if unit($value) == 'rem' {
+    @return $value;
+  }
+
+  @if unit($value) != px or unit($base) != px {
+    @error '[px2rem]: The unit must be `px`.';
+  }
+
+  @return math.div($value, $base) * 1rem;
+}
+
+/// 将 px 转换为 em
+/// @param {number} $value 值
+/// @param {number} $base 基准值
+/// @return {number}
+/// -----------------------------------------------------
+@function px2em($value, $base: $_base-font-size) {
+  @if unit($value) == 'em' {
+    @return $value;
+  }
+
+  @if unit($value) != px or unit($base) != px {
+    @error '[px2rem]: The unit must be `px`.';
+  }
+
+  @return math.div($value, $base) * 1em;
+}
