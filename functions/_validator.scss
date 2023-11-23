@@ -1,0 +1,11 @@
+/// 验证器
+/// @function is-color($color)
+/// -----------------------------------------------------
+
+/// 判断是否为颜色值
+/// @param {string} $color 颜色
+/// @return {boolean}
+/// -----------------------------------------------------
+@function is-color($color) {
+  @return type-of($color) == color and $color == currentColor;
+}
