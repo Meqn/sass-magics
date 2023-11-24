@@ -33,9 +33,9 @@ $_currentTheme: light;
 }
 
 /// 获取当前主题变量
-/// @param {string} $key 变量名
+/// @param {string} $name 变量名
 /// @return {string} 变量值
-@function useThemeVar($key) {
-  $themeMap: map-get($map: $_themes, $key: $_currentTheme); // 获取遍历的当前主题
-  @return map-get($themeMap, $key);
+@function useThemeVar($name) {
+  $themeMap: map-get($_themes, $_currentTheme); // 获取遍历的当前主题
+  @return map-get($themeMap, $name);
 }
