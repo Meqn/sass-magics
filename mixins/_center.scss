@@ -1,0 +1,45 @@
+/// 实现水平垂直居中
+/// @mixin flex-center
+/// @mixin position-center($width)
+/// @mixin inline-center($align)
+/// @author Mervin <mengqing723@gmail.com>
+/// @link https://github.com/meqn/sass-magic
+/// -----------------------------------------------------
+
+/// flex实现居中
+/// -----------------------------------------------------
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/// 定位水平垂直居中
+/// @param {number} $width 元素宽度, auto
+/// -----------------------------------------------------
+@mixin position-center($width: auto) {
+  @if $width {
+    width: $width;
+  }
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/// inline 垂直居中
+/// @param {string} $align 水平对齐方式
+/// -----------------------------------------------------
+@mixin inline-center($align: null) {
+  @if $align {
+    text-align: $align;
+  }
+
+  &::after{
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 100%;
+    vertical-align: middle;
+  }
+}
