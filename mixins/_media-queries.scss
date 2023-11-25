@@ -6,7 +6,7 @@
 
 /// 媒体查询 (设备尺寸、分辨率、方向)
 /// @mixin change-breakpoints($key, $point, $breakpoints)
-/// @mixin respond-to($$key, $breakpoints)
+/// @mixin respond-to($key, $breakpoints)
 /// @mixin mq($min, $max, $orientation, $and, $media-type, $breakpoints)
 ///-----------------------------------------------------
 

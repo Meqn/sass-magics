@@ -1,0 +1,57 @@
+@use 'sass:math';
+@use '../functions/validator' as *;
+
+/// 生成一个指定方向的三角形
+/// @param {string} $direction 方向
+/// @param {string} $color 颜色
+/// @param {number} $width 三角形宽度
+/// @param {number} $height 三角形高度
+/// @example scss
+/// @include triangle(up, blue, 10px, 10px);
+/// -----------------------------------------------------
+@mixin triangle(
+  $direction,
+  $color,
+  $width: 1em,
+  $height: 1em
+) {
+  @if not index(
+    ("up", "right", "down", "left", "up-right", "up-left", "down-right", "down-left"),
+    $direction
+  ) {
+    @error "[triangle]: Direction must be `up`, `right`, `down`, `left`, `up-right`, `up-left`, `down-right`, `down-left` .";
+  } @else if not is-color($color) {
+    @error "[triangle]: Color must be a valid color.";
+  } @else {
+    border-style: solid;
+    height: 0;
+    width: 0;
+    font-size: 0;
+
+    @if $direction == "up" {
+      border-color: transparent transparent $color;
+      border-width: 0 math.div($width, 2) $height;
+    } @else if $direction == "up-right" {
+      border-color: transparent $color transparent transparent;
+      border-width: 0 $width $width 0;
+    } @else if $direction == "right" {
+      border-color: transparent transparent transparent $color;
+      border-width: ($height / 2) 0 ($height / 2) $width;
+    } @else if $direction == "down-right" {
+      border-color: transparent transparent $color;
+      border-width: 0 0 $width $width;
+    } @else if $direction == "down" {
+      border-color: $color transparent transparent;
+      border-width: $height ($width / 2) 0;
+    } @else if $direction == "down-left" {
+      border-color: transparent transparent transparent $color;
+      border-width: $width 0 0 $width;
+    } @else if $direction == "left" {
+      border-color: transparent $color transparent transparent;
+      border-width: ($height / 2) $width ($height / 2) 0;
+    } @else if $direction == "up-left" {
+      border-color: $color transparent transparent;
+      border-width: $width $width 0 0;
+    }
+  }
+}
