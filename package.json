@@ -1,12 +1,48 @@
 {
-  "name": "sass-utils",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "sass-magics",
+  "version": "0.0.1-beta.4",
+  "description": "Sass magic helper. It extends the Sass built-in modules and provides useful mixins and functions that make your Sass writing more magical and elegant.",
+  "main": "_index.scss",
+  "files": [
+    "core",
+    "mixins",
+    "functions",
+    "_index.scss"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "watch": "jest --watch",
+    "dev": "sass -w"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "keywords": [
+    "sass",
+    "scss",
+    "sass-magic",
+    "sass-mixins",
+    "sass-functions",
+    "sass-utils",
+    "sass-helpers",
+    "sass-modules"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "homepage": "https://github.com/Meqn/sass-magics",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Meqn/sass-magics.git"
+  },
+  "author": "Mervin <mengqing723@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Meqn/sass-magics/issues"
+  },
+  "devDependencies": {
+    "glob": "^10.3.10",
+    "jest": "^29.7.0",
+    "sass": "^1.69.5",
+    "sass-magics": "latest",
+    "sass-true": "^7.0.0"
+  }
 }
