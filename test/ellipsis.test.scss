@@ -1,0 +1,37 @@
+@use 'true' as *;
+@use '../mixins/ellipsis' as *;
+
+@include describe('mixin: ellipsis') {
+  @include it('ellipsis single line') {
+    @include assert('default parameters') {
+      @include output {
+        @include ellipsis();
+      }
+      @include expect {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        word-wrap: normal;
+      }
+    }
+  }
+
+  @include test('multiple line') {
+    @include assert {
+      @include output {
+        @include ellipsis(3);
+      }
+      @include expect {
+        overflow: hidden;
+        display: -webkit-box;
+        display: box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        box-orient: vertical;
+      }
+    }
+  }
+}

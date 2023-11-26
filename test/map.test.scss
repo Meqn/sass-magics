@@ -1,0 +1,41 @@
+@use 'true' as *;
+@use '../core/map' as *;
+
+$test-map: (
+  a: 1,
+  b: (
+    b1: 21,
+    b2: 22
+  ),
+  c: 3
+);
+
+@include describe('module: map') {
+  @include it('map-sort') {
+    $result: map-sort(
+      (
+        tablet: 640px,
+        desktop: 1024px,
+        mobile: 320px,
+        wide: 1680px
+      )
+    );
+    $first: nth($result, 1);
+    $third: nth($result, 3);
+    @include assert-equal(nth(nth($result, 1), 1), mobile);
+    @include assert-equal(nth(nth($result, 1), 2), 320px);
+    @include assert-equal(nth(nth($result, 3), 1), desktop);
+    @include assert-equal(nth(nth($result, 3), 2), 1024px);
+  }
+  
+  @include it('map-extend') {
+    @include assert-equal(map-extend($test-map, (b:2, d: 4)), (a: 1, b: 2, c: 3, d: 4));
+  }
+  
+  @include it('map-extend with deep') {
+    @include assert-equal(
+      map-extend($test-map, (b: (b2: 222, b3: 223)), (c: 33, d: 44), true),
+      (a: 1, b: (b1: 21, b2: 222, b3: 223), c: 33, d: 44)
+    );
+  }
+}

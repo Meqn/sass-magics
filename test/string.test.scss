@@ -1,0 +1,9 @@
+@use 'true' as *;
+@use '../core/string' as *;
+
+@include describe('module: string') {
+  @include it('str-replace') {
+    @include assert-equal(str-replace('width is 10px', 'px', 'em'), 'width is 10em');
+    @include assert-equal(str-replace('Width of 10px, height of 20px', 'px', 'em'), 'Width of 10em, height of 20em');
+  }
+}

@@ -1,0 +1,8 @@
+@use 'true' as *;
+@use '~sass-magics' as *;
+
+@include describe('@import: sass-magics') {
+  @include it('string: str-replace') {
+    @include assert-equal(str-replace('width is 10px', 'px', 'em'), 'width is 10em');
+  }
+}
