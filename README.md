@@ -6,6 +6,14 @@ It extends the Sass built-in modules and provides useful mixins and functions th
 
 一个功能丰富的 Sass 魔法助手。它扩展了 Sass 内置模块，并提供了常用的 mixins 和 functions，让你的 Sass 编写更加魔法般的便捷和优雅。
 
+## Installation
+
+```bash
+npm install sass-magics
+# or
+yarn add sass-magics
+```
+
 
 ## Usage
 
@@ -13,7 +21,16 @@ It extends the Sass built-in modules and provides useful mixins and functions th
 // @import
 @import "sass-magics";
 
-// @use
+// @use ✅
+@use "sass-magics as *";
+```
+
+**Using a single module**
+```scss
+// @import
+@import 'sass-magics/mixins/media-queries';
+
+// @use ✅
 @use 'sass-magics/mixins/media-queries' as * with (
   $_breakpoints: (
     'mobile': 320px,
@@ -26,7 +43,13 @@ It extends the Sass built-in modules and provides useful mixins and functions th
 ```
 
 
+
 ## modules
+```scss
+@import 'sass-magics/core/string';
+@import 'sass-magics/core/list';
+@import 'sass-magics/core/map';
+```
 
 ### string
 - `str-replace($string, $search, $replace: "")`
@@ -70,6 +93,11 @@ $list: (4px, 8px, 12px, 16px, 20px);
 
 
 ## functions
+```scss
+@import 'sass-magics/functions/unit';
+@import 'sass-magics/core/validator';
+```
+
 **unit**
 - `strip-unit($value)`
 - `compare-unit($values...)`
@@ -84,10 +112,20 @@ $list: (4px, 8px, 12px, 16px, 20px);
 
 
 ## mixins
+```scss
+@import 'sass-magics/mixins/selector';
+@import 'sass-magics/mixins/media-queries';
+@import 'sass-magics/mixins/use-theme';
+@import 'sass-magics/mixins/center';
+@import 'sass-magics/mixins/ellipsis';
+@import 'sass-magics/mixins/triangle';
+```
 
 - `flex-center`
 - `position-center($width: auto)`
 - `inline-center($align: null)`
+- `ellipsis($rows, $max-width, $display)`
+- `triangle($direction, $color, $width, $height)`
 
 **media-queries**
 - `mq($min:?, $max:?, $orientation:?, $and:?, $media-type:?, $breakpoints:?)`
@@ -99,6 +137,15 @@ $list: (4px, 8px, 12px, 16px, 20px);
 - `useThemeVar($name)`
 
 ```scss
+@use 'sass-magics/mixins/use-theme' as * with (
+  dark: (
+    primary-color: #fff,
+  ),
+  light: (
+    primary-color: #000,
+  )
+);
+
 .primary-button{
   @include useTheme {
     color: useThemeVar('primary-color');
@@ -114,12 +161,17 @@ $list: (4px, 8px, 12px, 16px, 20px);
   .list{
     .item{
       background-color: #eee;
+
       @include limit-parent('.list', '.active') {
         background-color: #ccc;
       }
     }
   }
 }
+
+//result
+.users .list .item{background-color: #eee;}
+.users .list.active .item{background-color: #ccc;}
 ```
 
 ## License
