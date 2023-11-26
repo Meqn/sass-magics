@@ -1,6 +1,6 @@
 {
   "name": "sass-magics",
-  "version": "0.0.1-beta.4",
+  "version": "0.0.1",
   "description": "Sass magic helper. It extends the Sass built-in modules and provides useful mixins and functions that make your Sass writing more magical and elegant.",
   "main": "_index.scss",
   "files": [
@@ -24,6 +24,7 @@
     "sass-helpers",
     "sass-modules"
   ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
