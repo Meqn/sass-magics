@@ -15,30 +15,6 @@
 /// @function list-reverse($list, $separator: false, $bracketed: false)
 /// -----------------------------------------------------
 
-
-/// 删除list中指定索引值
-/// @access private
-/// @param {list} $list list列表
-/// @param {number} $index 需要删除的索引
-/// @return {list} 删除后的list
-/// @example `_remove-index((10, 20, 30), 2)`
-/// -------------------------------------
-@function _remove-index($list, $index) {
-  $length: length($list);
-
-  @if $index == 0 or $index > $length {
-    @return $list;
-  }
-
-  $result: ();
-  @for $i from 1 through $length {
-    @if $i != $index {
-      $result: list.append($result, nth($list, $i));
-    }
-  }
-  @return $result;
-}
-
 /// 删除list中指定值
 /// @access private
 /// @param {list} $list list列表
@@ -56,7 +32,7 @@
 }
 
 /// 通过索引截取list
-///!⚠️ 由于Sass索引从 `1` 开始, 故使用 `count`，而非 `end`.
+///!⚠️ Sass索引从 `1` 开始.
 /// @param {list} $list 待遍历的 list
 /// @param {number} $start 开始索引
 /// @param {number} $count 截取长度
@@ -79,9 +55,10 @@
   }
   
   $result: ();
+  $separator: list.separator($list);
   @for $i from 1 through $length {
     @if $i < $start or $i >= $end {
-      $result: list.append($result, nth($list, $i));
+      $result: list.append($result, nth($list, $i), $separator);
     }
   }
   @return $result;
@@ -102,7 +79,6 @@
   }
 
   $length: length($list);
-  $result: ();
   
   @if not $end {
     $end: $length;
@@ -110,9 +86,11 @@
     @error "[list-subset]: The 'end' parameter must be greater than 'start'.";
   }
 
+  $result: ();
+  $separator: list.separator($list);
   @for $i from 1 through $length {
     @if $i < $start or $i > $end {
-      $result: list.append($result, nth($list, $i));
+      $result: list.append($result, nth($list, $i), $separator);
     }
   }
   @return $result;
@@ -154,6 +132,7 @@
 @function list-insert($list, $start, $args...) {
   $listLength: length($list);
   $argsLength: length($args);
+  $separator: list.separator($list);
   
   @if $argsLength == 0 {
     @return $list;
@@ -161,20 +140,21 @@
   // 支持多参二次调用
   @if type-of(nth($args, 1)) == arglist {
     $args: nth($args, 1);
+    $argsLength: length($args);
   }
 
-  @if $start == 0 {
-    @return list.join($args, $list);
+  @if $start <= 0 {
+    @return list.join($args, $list, $separator);
   }
   @if ($start >= $listLength) {
-    @return list.join($list, $args);
+    @return list.join($list, $args, $separator);
   }
   
   $result: ();
   @for $i from 1 through $listLength {
-    $result: list.append($result, nth($list, $i));
+    $result: list.append($result, nth($list, $i), $separator);
     @if $i == $start {
-      $result: list.join($result, $args);
+      $result: list.join($result, $args, $separator);
     }
   }
   @return $result;
@@ -202,6 +182,7 @@
       $args: nth($args, 1);
     }
     // 2. 再追加
+    $start: $start - $count; // 计算插入位置
     $list: list-insert($list, $start, $args)
   }
   @return $list;
@@ -277,6 +258,7 @@
   }
 
   $length: length($list);
+  $separator: list.separator($list);
   $results: ();
 
   @for $i from 1 through $length {
@@ -284,9 +266,9 @@
     $item: call($callback, $current, $i, $list);
 
     @if type-of($item) == map {
-      $results: map-merge($results, $item);
+      $results: map.merge($results, $item);
     } @else {
-      $results: append($results, $item);
+      $results: append($results, $item, $separator);
     }
   }
   @return $results;
@@ -319,6 +301,8 @@
     @error "[list-sort]: The 'order' parameter must be 'ascend' or 'descend'.";
   }
 
+  $separator: list.separator($list);
+
   // 初始化左右数组
   $left: ();
   $right: ();
@@ -332,16 +316,16 @@
 
     @if $order == ascend {
       @if $current < $pivot {
-        $left: append($left, $current);
+        $left: append($left, $current, $separator);
       } @else {
-        $right: append($right, $current); 
+        $right: append($right, $current, $separator); 
       }
     } @else {
       // @else if $order == descend
       @if $current > $pivot {
-        $left: append($left, $current);
+        $left: append($left, $current, $separator);
       } @else {
-        $right: append($right, $current);
+        $right: append($right, $current, $separator);
       }
     }
   }
@@ -351,7 +335,7 @@
   $right: list-sort($right, $order);
 
   // 拼接最终结果
-  @return join(join($left, $pivot), $right);
+  @return join(join($left, $pivot), $right, $separator);
 }
 
 /// 反转 list并返回新的 list
@@ -366,13 +350,13 @@
 @function list-reverse($list, $separator: false, $bracketed: false) {
   $result: ();
   $length: length($list);
+  $separator: if($separator, $separator, list.separator($list));
 
   @for $i from $length through 1 {
-    $result: append($result, nth($list, $i));
+    $result: append($result, nth($list, $i), $separator);
   }
 
-  @if $separator or $bracketed {
-    $separator: if($separator, $separator, auto);
+  @if $bracketed {
     $bracketed: if($bracketed, $bracketed, auto);
     $result: join($result, (), $separator, $bracketed);
   }
