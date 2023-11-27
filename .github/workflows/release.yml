@@ -1,0 +1,48 @@
+name: Release Package
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: |
+          pnpm install
+          pnpm test
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      
+      # 自动发布版本
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          release-type: node
+          package-name: sass-magics
+          token: ${{ secrets.GH_RELEASE_TOKEN }}
+          changelog-types: '[{"type":"feat","section":"🚀 Features","hidden":false},{"type":"fix","section":"🐛 Bug Fixes","hidden":false},{"type":"perf","section":"🌟 Performance","hidden":false},{"type":"chore","section":"🚚 Miscellaneous","hidden":false}]'
+          # release-as: v1.0.0
+          prerelease: false
+      
+      # npm发布
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
+        if: ${{ steps.release.outputs.release_created }}
