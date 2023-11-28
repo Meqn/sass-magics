@@ -43,7 +43,7 @@ $_base-font-size: 16px !default;
 /// @param {string | number} $unit 单位, .e.g: ['px', 1px]
 /// @return {string | number} $unit是number时返回number，否则返回string
 /// -----------------------------------------------------
-@function join-unit($value, $unit) {
+@function join-unit($value, $unit: px) {
   $_valueUnit: unit($value);
   $_unit: if(type-of($unit) == number, unit($unit), $unit);
 
