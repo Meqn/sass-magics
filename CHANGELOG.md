@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.1](https://github.com/Meqn/sass-magics/compare/v1.0.0...v1.0.1) (2023-11-28)
+
+
+### 🐛 Bug Fixes
+
+* List-splice insertion position and separator and other issues ([044e038](https://github.com/Meqn/sass-magics/commit/044e038eab7329d0d2f273506e5cd5eaf2e6ce57))
+* The is-color() condition is incorrect ([91231b4](https://github.com/Meqn/sass-magics/commit/91231b41948ad12da6e6fce587c4e8aa8f4d7d1d))
+
+
+### 🌟 Performance
+
+* Add default values for join-unit() parameters ([87c2e40](https://github.com/Meqn/sass-magics/commit/87c2e403f059d3115f8c85a242913652759020e9))
+
 ## 1.0.0 (2023-11-27)
 
 
