@@ -7,5 +7,5 @@
 /// @return {boolean}
 /// -----------------------------------------------------
 @function is-color($color) {
-  @return type-of($color) == color and $color == currentColor;
+  @return type-of($color) == color or $color == currentColor;
 }
