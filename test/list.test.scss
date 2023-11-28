@@ -1,0 +1,56 @@
+@use 'true' as *;
+@use '../core/list' as *;
+
+$list: (40px, 60px, 20px, 80px);
+@function each-callback($item, $index, $list) {
+  @return $item * 2;
+}
+
+@include describe('module: list') {
+  @include it('list-sub') {
+    @include assert-equal(list-sub($list, 2, 1), (40px, 20px, 80px));
+    @include assert-equal(list-sub($list, 3), (40px, 60px));
+  }
+
+  @include it('list-subset') {
+    @include assert-equal(list-subset($list, 3, length($list)), (40px, 60px));
+    @include assert-equal(list-subset($list, 3), (40px, 60px));
+    @include assert-equal(list-subset($list, 2, 3), (40px, 80px));
+  }
+
+  @include it('list-remove') {
+    @include assert-equal(list-remove($list, 20px), (40px, 60px, 80px));
+    @include assert-equal(list-remove($list, 20px, 60px), (40px, 80px));
+    @include assert-equal(list-remove((2 5 8 5 3), 5), (2 8 3));
+  }
+
+  @include it('list-insert') {
+    @include assert-equal(list-insert($list, 0, 10px, 20px, 30px), (10px, 20px, 30px, 40px, 60px, 20px, 80px));
+    @include assert-equal(list-insert($list, 2, 10px 30px), (40px, 60px, 10px 30px, 20px, 80px));
+    @include assert-equal(list-insert($list, -2, 10px), (10px, 40px, 60px, 20px, 80px));
+  }
+
+  @include it('list-splice') {
+    @include assert-equal(list-splice($list, 2, 1), (40px, 20px, 80px));
+    @include assert-equal(list-splice($list, 2, 1, 10px, 30px), (40px, 10px, 30px, 20px, 80px));
+  }
+
+  @include it('list-extend') {
+    @include assert-equal(list-extend($list, 10px 30px), (40px, 60px, 20px, 80px, 10px, 30px));
+    @include assert-equal(list-extend((10, 20, 30), (40), (50, 60), 'space'), (10 20 30 40 50 60));
+  }
+
+  @include it('list-each') {
+    @include assert-equal(list-each($list, get-function(each-callback)), (80px, 120px, 40px, 160px));
+  }
+
+  @include it('list-sort') {
+    @include assert-equal(list-sort($list), (20px, 40px, 60px, 80px));
+    @include assert-equal(list-sort($list, descend), (80px, 60px, 40px, 20px));
+  }
+
+  @include it('list-reverse') {
+    @include assert-equal(list-reverse($list), (80px, 20px, 60px, 40px));
+    @include assert-equal(list-reverse($list, space), (80px 20px 60px 40px));
+  }
+}

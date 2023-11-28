@@ -22,10 +22,10 @@ $test-map: (
     );
     $first: nth($result, 1);
     $third: nth($result, 3);
-    @include assert-equal(nth(nth($result, 1), 1), mobile);
-    @include assert-equal(nth(nth($result, 1), 2), 320px);
-    @include assert-equal(nth(nth($result, 3), 1), desktop);
-    @include assert-equal(nth(nth($result, 3), 2), 1024px);
+    @include assert-equal(nth($first, 1), mobile);
+    @include assert-equal(nth($first, 2), 320px);
+    @include assert-equal(nth($third, 1), desktop);
+    @include assert-equal(nth($third, 2), 1024px);
   }
   
   @include it('map-extend') {

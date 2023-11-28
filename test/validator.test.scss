@@ -1,0 +1,9 @@
+@use 'true' as *;
+@use '../functions/validator' as *;
+
+@include describe('function: validator') {
+  @include it('is-color') {
+    @include assert-equal(is-color(red), true);
+    @include assert-equal(is-color(rgba(0, 0, 0, 0)), true);
+  }
+}

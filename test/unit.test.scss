@@ -1,0 +1,44 @@
+@use 'true' as *;
+@use '../functions/unit' as * with (
+  $_base-font-size: 16px
+);
+
+@include describe('function: unit') {
+  @include it('strip-unit') {
+    @include assert-equal(strip-unit(10), 10);
+    @include assert-equal(strip-unit(10px), 10);
+    @include assert-equal(strip-unit(10%), 10);
+    @include assert-equal(strip-unit(10em), 10);
+  }
+
+  @include it('compare-unit') {
+    @include assert-equal(compare-unit(10, 10), true);
+    @include assert-equal(compare-unit(10px, 10), false);
+    @include assert-equal(compare-unit(10rem, 10em), false);
+  }
+
+  @include it('join-unit') {
+    @include assert-equal(join-unit(10), '10px');
+    @include assert-equal(join-unit(10, px), '10px');
+    @include assert-equal(join-unit(10, 1px), 10px);
+    // @include assert-equal(join-unit(10em, '%'), 10em);
+  }
+
+  @include it('add-unit') {
+    @include assert-equal(add-unit(10), 10px);
+    @include assert-equal(add-unit(10, em), 10em);
+    @include assert-equal(add-unit(10, 1%), 10%);
+  }
+
+  @include it('px2rem') {
+    @include assert-equal(px2rem(5rem), 5rem);
+    @include assert-equal(px2rem(24px), 1.5rem);
+    @include assert-equal(px2rem(24px, 20px), 1.2rem);
+  }
+
+  @include it('px2em') {
+    @include assert-equal(px2em(5em), 5em);
+    @include assert-equal(px2em(24px), 1.5em);
+    @include assert-equal(px2em(24px, 20px), 1.2em);
+  }
+}
