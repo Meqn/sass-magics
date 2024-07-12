@@ -22,7 +22,7 @@ yarn add sass-magics
 @import "sass-magics";
 
 // @use ✅
-@use "sass-magics as *";
+@use "sass-magics" as *;
 ```
 
 **Using a single module**
