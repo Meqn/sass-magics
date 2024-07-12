@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/Meqn/sass-magics/compare/v1.0.2...v1.0.3) (2024-07-12)
+
+
+### 🐛 Bug Fixes
+
+* **validator:** ensure is-color function handles additional color formats ([9abac36](https://github.com/Meqn/sass-magics/commit/9abac36fc9a5e02303f090b8927cb34c0b1d14f1))
+
 ## [1.0.2](https://github.com/Meqn/sass-magics/compare/v1.0.1...v1.0.2) (2024-07-12)
 
 
