@@ -1,6 +1,6 @@
 {
   "name": "sass-magics",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Sass magic helper. It extends the Sass built-in modules and provides useful mixins and functions that make your Sass writing more magical and elegant.",
   "main": "_index.scss",
   "files": [
