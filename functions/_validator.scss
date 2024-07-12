@@ -1,3 +1,5 @@
+@use 'sass:string';
+
 /// 验证器
 /// @function is-color($color)
 /// -----------------------------------------------------
@@ -7,5 +9,6 @@
 /// @return {boolean}
 /// -----------------------------------------------------
 @function is-color($color) {
-  @return type-of($color) == color or $color == currentColor;
+  // currentColor, var(--color-blue);
+  @return type-of($color) == color or $color == currentColor or str-slice($color, 1, 6) == 'var(--';
 }
