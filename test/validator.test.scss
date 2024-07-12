@@ -5,5 +5,12 @@
   @include it('is-color') {
     @include assert-equal(is-color(red), true);
     @include assert-equal(is-color(rgba(0, 0, 0, 0)), true);
+    @include assert-equal(is-color(#000), true);
+    @include assert-equal(is-color(currentColor), true);
+    @include assert-equal(is-color(#00000000), true);
+    @include assert-equal(is-color(transparent), true);
+    @include assert-equal(is-color(20), false);
+    @include assert-equal(is-color('currentColor'), true);
+    @include assert-equal(is-color(var(--color-blue)), true);
   }
 }

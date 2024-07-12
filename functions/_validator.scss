@@ -10,5 +10,11 @@
 /// -----------------------------------------------------
 @function is-color($color) {
   // currentColor, var(--color-blue);
-  @return type-of($color) == color or $color == currentColor or str-slice($color, 1, 6) == 'var(--';
+  @if type-of($color) == color or $color == currentColor {
+    @return true;
+  } @else if type-of($color) == 'string' and str-slice($color, 1, 6) == 'var(--' {
+    @return true;
+  } @else {
+    @return false
+  }
 }
