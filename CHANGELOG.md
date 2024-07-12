@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/Meqn/sass-magics/compare/v1.0.1...v1.0.2) (2024-07-12)
+
+
+### 🐛 Bug Fixes
+
+* **readme:** correct `[@use](https://github.com/use)` syntax in example ([481361a](https://github.com/Meqn/sass-magics/commit/481361a411a3e3cf9f73571d0a88c8b274d75c23))
+* **triangle:** replace division with math.div for border-width ([a34096b](https://github.com/Meqn/sass-magics/commit/a34096bf2a892246e9e8b6cd31691cde836e77c4))
+* **validator:** enhance color validation to include var(--color) ([6d88816](https://github.com/Meqn/sass-magics/commit/6d88816c6c4b3eb868304bee4ff089096071a5de))
+
 ## [1.0.1](https://github.com/Meqn/sass-magics/compare/v1.0.0...v1.0.1) (2023-11-28)
 
 
